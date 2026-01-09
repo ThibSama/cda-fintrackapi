@@ -1,4 +1,4 @@
-package com.cda_fintrackapi.dto.request;
+package com.cda_fintrackapi.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -7,16 +7,19 @@ import com.cda_fintrackapi.model.enums.TransactionCategory;
 import com.cda_fintrackapi.model.enums.TransactionStatus;
 import com.cda_fintrackapi.model.enums.TransactionType;
 
-import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 
 @Data
-public class TransactionUpdateRequest {
-    @DecimalMin(value = "0.01", message = "Le montant doit être au moins de 0.01")
+public class TransactionResponse {
+    
+    private Long id;
     private BigDecimal amount;
     private TransactionType type;
     private LocalDateTime date;
     private TransactionCategory category;
     private TransactionStatus status;
     private String description;
+    private Long userId;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

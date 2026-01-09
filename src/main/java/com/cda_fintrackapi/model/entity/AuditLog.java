@@ -30,10 +30,10 @@ public class AuditLog {
     @Column(nullable = false)
     private String action;
     
-    @Column(nullable = false)
+    @Column(name = "entity_type", nullable = false)
     private String entityType;
     
-    @Column(nullable = false)
+    @Column(name = "entity_id", nullable = false)
     private Long entityId;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,11 +43,11 @@ public class AuditLog {
     @Column(length = 1000)
     private String details;
     
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "timestamp", nullable = false, updatable = false)
+    private LocalDateTime timestamp;
     
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        timestamp = LocalDateTime.now();
     }
 }

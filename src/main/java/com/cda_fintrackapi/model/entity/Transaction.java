@@ -36,22 +36,22 @@ public class Transaction {
     private Long id;
     
     @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal montant;
+    private BigDecimal amount;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
     
-    @Column(nullable = false)
+    @Column(name = "transaction_date", nullable = false)
     private LocalDateTime date;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionCategory categorie;
+    private TransactionCategory category;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionStatus statut;
+    private TransactionStatus status;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -69,8 +69,8 @@ public class Transaction {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        if (statut == null) {
-            statut = TransactionStatus.EN_ATTENTE;
+        if (status == null) {
+            status = TransactionStatus.EN_ATTENTE;
         }
         if (date == null) {
             date = LocalDateTime.now();

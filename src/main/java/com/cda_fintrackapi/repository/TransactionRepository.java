@@ -23,11 +23,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>{
     List<Transaction> findByStatus(TransactionStatus status);
     List<Transaction> findByCategory(TransactionCategory category);
     List<Transaction> findByUserAndStatus(User user, TransactionStatus status);
-    List<Transaction> findByTransactionDateBetween(LocalDateTime startDate, LocalDateTime endDate);
-    List<Transaction> findByUserAndTransactionDateBetween(User user, LocalDateTime startDate, LocalDateTime endDate);
+    List<Transaction> findByDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<Transaction> findByUserAndDateBetween(User user, LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user = :user AND t.status = :status")
     BigDecimal calculateTotalByUserAndStatus(@Param("user") User user, @Param("status") TransactionStatus status);
     
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user = :user AND t.type = :type AND t.status = 'FINALISEE'")
-    BigDecimal calculateTotalByUserAndType(@Param("user") User user, @Param("type") TransactionType type);}
+    BigDecimal calculateTotalByUserAndType(@Param("user") User user, @Param("type") TransactionType type);
+}

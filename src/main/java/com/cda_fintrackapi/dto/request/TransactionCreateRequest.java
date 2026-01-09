@@ -1,6 +1,7 @@
 package com.cda_fintrackapi.dto.request;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -17,9 +18,15 @@ public class TransactionCreateRequest {
     @NotNull(message = "Le type est obligatoire")
     private String type;
 
-    @NotNull(message = "La catégories est obligatoire")
+    @NotNull(message = "La date est obligatoire")
+    private LocalDateTime date;
+
+    @NotNull(message = "La catégorie est obligatoire")
     private String category;
 
     @NotBlank(message = "La description est obligatoire")
     private String description;
+
+    @NotNull(message = "L'ID utilisateur est obligatoire")
+    private Long userId;
 }

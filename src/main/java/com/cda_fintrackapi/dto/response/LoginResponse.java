@@ -1,13 +1,11 @@
 package com.cda_fintrackapi.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class LoginResponse {
     private String token;
-    private String type = "Bearer";
+    private String type;
     private Long userId;
     private String email;
     private String role;
@@ -15,6 +13,7 @@ public class LoginResponse {
     public LoginResponse(String token, Long userId, String email, String role) 
     {
         this.token = token;
+        this.type = "Bearer";
         this.userId = userId;
         this.email = email;
         this.role = role;
