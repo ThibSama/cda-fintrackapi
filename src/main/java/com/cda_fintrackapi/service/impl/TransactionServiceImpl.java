@@ -20,6 +20,7 @@ import com.cda_fintrackapi.model.enums.TransactionStatus;
 import com.cda_fintrackapi.model.enums.TransactionType;
 import com.cda_fintrackapi.repository.TransactionRepository;
 import com.cda_fintrackapi.repository.UserRepository;
+import com.cda_fintrackapi.service.AuditLogService;
 import com.cda_fintrackapi.service.TransactionService;
 
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,13 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final TransactionMapper transactionMapper;
+    private final AuditLogService auditLogService;
 
     @Override
     public TransactionResponse createTransaction(TransactionCreateRequest request) {
-        // Vérifier que l'utilisateur existe
         User user = userRepository.findById(request.getUserId())
             .orElseThrow(() -> new RessourceNotFoundException("Utilisateur non trouvé avec l'ID : " + request.getUserId()));
         
-        // Créer la transaction
         Transaction transaction = transactionMapper.toEntity(request);
         transaction.setUser(user);
         transaction.setType(TransactionType.valueOf(request.getType()));
@@ -47,6 +47,15 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setStatus(TransactionStatus.EN_ATTENTE);
         
         Transaction savedTransaction = transactionRepository.save(transaction);
+        
+        auditLogService.createLog(
+            "CREATE_TRANSACTION",
+            "Transaction",
+            savedTransaction.getId(),
+            user.getId(),
+            "Transaction créée : " + savedTransaction.getAmount() + " € (" + savedTransaction.getType() + ")"
+        );
+        
         return transactionMapper.toResponse(savedTransaction);
     }
 
@@ -71,18 +80,36 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(id)
             .orElseThrow(() -> new RessourceNotFoundException("Transaction non trouvée avec l'ID : " + id));
         
-        // Mettre à jour les champs
         transactionMapper.updateEntityFromRequest(request, transaction);
         
         Transaction updatedTransaction = transactionRepository.save(transaction);
+        
+        auditLogService.createLog(
+            "UPDATE_TRANSACTION",
+            "Transaction",
+            updatedTransaction.getId(),
+            updatedTransaction.getUser().getId(),
+            "Transaction mise à jour : " + updatedTransaction.getAmount() + " € (" + updatedTransaction.getStatus() + ")"
+        );
+        
         return transactionMapper.toResponse(updatedTransaction);
     }
 
     @Override
     public void deleteTransaction(Long id) {
-        if (!transactionRepository.existsById(id)) {
-            throw new RessourceNotFoundException("Transaction non trouvée avec l'ID : " + id);
-        }
+        Transaction transaction = transactionRepository.findById(id)
+            .orElseThrow(() -> new RessourceNotFoundException("Transaction non trouvée avec l'ID : " + id));
+        
+        Long userId = transaction.getUser().getId();
+        
+        auditLogService.createLog(
+            "DELETE_TRANSACTION",
+            "Transaction",
+            id,
+            userId,
+            "Transaction supprimée avec l'ID : " + id
+        );
+        
         transactionRepository.deleteById(id);
     }
 
@@ -153,16 +180,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public BigDecimal calculateTotalByUserAndCategory(Long userId, TransactionCategory category) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new RessourceNotFoundException("Utilisateur non trouvé avec l'ID : " + userId));
-    
-    BigDecimal total = transactionRepository.calculateTotalByUserAndCategory(user, category);
-    return total != null ? total : BigDecimal.ZERO;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public BigDecimal calculateTotalByUserAndStatus(Long userId, TransactionStatus status) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RessourceNotFoundException("Utilisateur non trouvé avec l'ID : " + userId));
@@ -193,8 +210,18 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResponse finalizeTransaction(Long id) {
         Transaction transaction = transactionRepository.findById(id)
             .orElseThrow(() -> new RessourceNotFoundException("Transaction non trouvée avec l'ID : " + id));
+        
         transaction.setStatus(TransactionStatus.FINALISEE);
         Transaction updatedTransaction = transactionRepository.save(transaction);
+        
+        auditLogService.createLog(
+            "FINALIZE_TRANSACTION",
+            "Transaction",
+            id,
+            updatedTransaction.getUser().getId(),
+            "Transaction finalisée : " + updatedTransaction.getAmount() + " €"
+        );
+        
         return transactionMapper.toResponse(updatedTransaction);
     }
 
@@ -202,8 +229,18 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResponse cancelTransaction(Long id) {
         Transaction transaction = transactionRepository.findById(id)
             .orElseThrow(() -> new RessourceNotFoundException("Transaction non trouvée avec l'ID : " + id));
+        
         transaction.setStatus(TransactionStatus.ANNULEE);
         Transaction updatedTransaction = transactionRepository.save(transaction);
+        
+        auditLogService.createLog(
+            "CANCEL_TRANSACTION",
+            "Transaction",
+            id,
+            updatedTransaction.getUser().getId(),
+            "Transaction annulée : " + updatedTransaction.getAmount() + " €"
+        );
+        
         return transactionMapper.toResponse(updatedTransaction);
     }
 
@@ -211,8 +248,18 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionResponse pendTransaction(Long id) {
         Transaction transaction = transactionRepository.findById(id)
             .orElseThrow(() -> new RessourceNotFoundException("Transaction non trouvée avec l'ID : " + id));
+        
         transaction.setStatus(TransactionStatus.EN_ATTENTE);
         Transaction updatedTransaction = transactionRepository.save(transaction);
+        
+        auditLogService.createLog(
+            "PEND_TRANSACTION",
+            "Transaction",
+            id,
+            updatedTransaction.getUser().getId(),
+            "Transaction mise en attente : " + updatedTransaction.getAmount() + " €"
+        );
+        
         return transactionMapper.toResponse(updatedTransaction);
     }
 

@@ -16,4 +16,5 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     List<AuditLog> findByTimestampBetween(LocalDateTime start, LocalDateTime end);
     List<AuditLog> findByUserAndAction(User user, String action);
     List<AuditLog> findTop10ByUserOrderByTimestampDesc(User user);
+    List<AuditLog> findByUserOrderByTimestampDesc(User user);
 }
